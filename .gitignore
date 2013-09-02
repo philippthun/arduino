@@ -1,6 +1,11 @@
 ﻿/*
 /*/
+!/libraries/
+/libraries/*
+/libraries/*/
 !/Empty
 !/ButtonSwitchesLedState
 !/PedestrianLight
 !/BluetoothTest
+!/Robot
+!/libraries/Robot
