@@ -1,3 +1,7 @@
+/*
+  Wifi test
+ */
+
 #include <Adafruit_CC3000.h>
 #include <SPI.h>
 #include "Credentials.h"
@@ -80,7 +84,7 @@ void loop(void) {
     resetCommand();
   }
   else if (commandAction == 'h') {
-    Serial.println(F("\n=== Disconnect..."));
+    Serial.println(F("\n=== Disconnecting..."));
     disconnect();
     resetCommand();
   }

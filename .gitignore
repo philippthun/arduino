@@ -9,5 +9,5 @@
 !/BluetoothTest
 !/Robot
 !/libraries/Robot
-!/Wifi
-/Wifi/Credentials.h
+!/WifiTest
+/WifiTest/Credentials.h
