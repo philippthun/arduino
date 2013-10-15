@@ -1,0 +1,10 @@
+Adafruit_CC3000_Helper	KEYWORD1
+initWifiModule	KEYWORD2
+checkFirmwareVersion	KEYWORD2
+displayMacAddress	KEYWORD2
+listNetworks	KEYWORD2
+connectToAccessPoint	KEYWORD2
+displayConnectionDetails	KEYWORD2
+ping	KEYWORD2
+disconnect	KEYWORD2
+displayStatus	KEYWORD2

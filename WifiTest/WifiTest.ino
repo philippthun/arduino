@@ -4,6 +4,7 @@
 
 #include <Adafruit_CC3000.h>
 #include <SPI.h>
+#include <Adafruit_CC3000_Helper.h>
 #include "Credentials.h"
 
 /********************************************************************************/
@@ -50,47 +51,47 @@ void loop(void) {
 
   if (commandAction == 'a') {
     Serial.println(F("\n=== Initialising Wifi module..."));
-    initWifiModule();
+    initWifiModule(cc3000);
     resetCommand();
   }
   else if (commandAction == 'b') {
     Serial.println(F("\n=== Checking firmware version..."));
-    checkFirmwareVersion();
+    checkFirmwareVersion(cc3000);
     resetCommand();
   }
   else if (commandAction == 'c') {
     Serial.println(F("\n=== Displaying MAC address..."));
-    displayMACAddress();
+    displayMacAddress(cc3000);
     resetCommand();
   }
   else if (commandAction == 'd') {
     Serial.println(F("\n=== Listing networks..."));
-    listNetworks();
+    listNetworks(cc3000);
     resetCommand();
   }
   else if (commandAction == 'e') {
-    Serial.println(F("\n=== Connecting to AP..."));
-    connectToAP();
+    Serial.println(F("\n=== Connecting to access point..."));
+    connectToAccessPoint(cc3000, WLAN_SSID, WLAN_PASS, WLAN_SECURITY);
     resetCommand();
   }
   else if (commandAction == 'f') {
     Serial.println(F("\n=== Displaying connection details..."));
-    displayConnectionDetails();
+    displayConnectionDetails(cc3000);
     resetCommand();
   }
   else if (commandAction == 'g') {
     Serial.println(F("\n=== Pinging Google..."));
-    pingGoogle();
+    ping(cc3000, "www.google.com", 5);
     resetCommand();
   }
   else if (commandAction == 'h') {
     Serial.println(F("\n=== Disconnecting..."));
-    disconnect();
+    disconnect(cc3000);
     resetCommand();
   }
   else if (commandAction == 'i') {
     Serial.println(F("\n=== Displaying status..."));
-    displayStatus();
+    displayStatus(cc3000);
     resetCommand();
   }
 
@@ -109,7 +110,7 @@ void printUsage() {
   Serial.println(F(" b - Check firmware version"));
   Serial.println(F(" c - Display MAC address"));
   Serial.println(F(" d - List networks"));
-  Serial.println(F(" e - Connect to AP"));
+  Serial.println(F(" e - Connect to access point"));
   Serial.println(F("  f - Display connection details"));
   Serial.println(F("  g - Ping Google"));
   Serial.println(F("  h - Disconnect"));
@@ -124,163 +125,5 @@ void receiveCommand() {
     Serial.println(F("\n=== Illegal action"));
     resetCommand();
   }
-}
-
-/********************************************************************************/
-
-void initWifiModule(void) {
-  if (!cc3000.begin()) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.println(F("=== Ok"));
-  }
-}
-
-void checkFirmwareVersion(void) {
-  uint8_t major, minor;
-
-  if(!cc3000.getFirmwareVersion(&major, &minor)) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.print(F("=== Firmware version: "));
-    Serial.print(major);
-    Serial.print(F("."));
-    Serial.println(minor);
-    uint16_t version = major;
-    version <<= 8;
-    version |= minor;
-
-    if ((version != 0x113) && (version != 0x118)) {
-      Serial.println(F("=== Wrong!"));
-    }
-    else {
-      Serial.println(F("=== Ok"));
-    }
-  }
-}
-
-void displayMACAddress(void) {
-  uint8_t macAddress[6];
-
-  if(!cc3000.getMacAddress(macAddress)) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.print(F("=== MAC address: "));
-    cc3000.printHex((byte*)&macAddress, 6);
-  }
-}
-
-void listNetworks(void) {
-  uint32_t index;
-  uint8_t valid, rssi, sec;
-  char ssidname[33];
-
-  if (!cc3000.startSSIDscan(&index)) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.print(F("=== Networks found: "));
-    Serial.println(index);
-
-    while (index) {
-      index--;
-
-      valid = cc3000.getNextSSID(&rssi, &sec, ssidname);
-
-      Serial.print(F("\n=== SSID name    : "));
-      Serial.println(ssidname);
-      Serial.print(F("=== RSSI         : "));
-      Serial.println(rssi);
-      Serial.print(F("=== Security mode: "));
-      Serial.println(sec);
-    }
-  }
-
-  cc3000.stopSSIDscan();
-}
-
-void connectToAP(void) {
-  char *ssid = WLAN_SSID;
-  Serial.print(F("=== Attempting to connect to "));
-  Serial.print(ssid);
-  Serial.println("...");
-  if(!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.println(F("=== Ok"));
-    Serial.println(F("\n=== Waiting for DHCP to complete..."));
-    int timer = 10000;
-    while ((timer > 0) && !cc3000.checkDHCP()) {
-      delay(10);
-      timer -= 10;
-    }
-    if (timer <= 0) {
-      Serial.println(F("=== Timed out!"));
-    }
-    else {
-      Serial.println(F("=== Ok"));
-    }
-  }
-}
-
-void displayConnectionDetails(void) {
-  uint32_t ipAddress, netmask, gateway, dhcpserv, dnsserv;
-
-  if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv)) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.print(F("=== IP Addr: "));
-    cc3000.printIPdotsRev(ipAddress);
-    Serial.print(F("\n=== Netmask: "));
-    cc3000.printIPdotsRev(netmask);
-    Serial.print(F("\n=== Gateway: "));
-    cc3000.printIPdotsRev(gateway);
-    Serial.print(F("\n=== DHCPsrv: "));
-    cc3000.printIPdotsRev(dhcpserv);
-    Serial.print(F("\n=== DNSserv: "));
-    cc3000.printIPdotsRev(dnsserv);
-    Serial.println();
-  }
-}
-
-void pingGoogle(void) {
-  uint32_t ip;
-  Serial.println(F("=== Resolving host name..."));
-  if (!cc3000.getHostByName("www.google.com", &ip)) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.println(F("=== Ok"));
-    Serial.print(F("\n=== Pinging "));
-    cc3000.printIPdotsRev(ip);
-    Serial.println(F("..."));
-    uint8_t replies = cc3000.ping(ip, 5, 1000);
-    Serial.print(F("=== "));
-    Serial.print(replies);
-    Serial.println(F(" successful replies"));
-  }
-}
-
-void disconnect(void) {
-  if (!cc3000.disconnect()) {
-    Serial.println(F("=== Failed!"));
-  }
-  else {
-    Serial.println(F("=== Ok"));
-  }
-}
-
-void displayStatus(void) {
-  Serial.print(F("=== Status: "));
-  Serial.println(cc3000.getStatus());
-  Serial.print(F("=== Connected: "));
-  Serial.println(cc3000.checkConnected());
-  Serial.print(F("=== DHCP: "));
-  Serial.println(cc3000.checkDHCP());
 }
 

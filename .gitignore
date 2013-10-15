@@ -11,3 +11,4 @@
 !/libraries/Robot
 !/WifiTest
 /WifiTest/Credentials.h
+!/libraries/Adafruit_CC3000_Helper
