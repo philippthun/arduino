@@ -4,6 +4,7 @@
 /libraries/*
 /libraries/*/
 !/README.md
+!/LICENSE
 !/ButtonSwitchesLedState
 !/PedestrianLight
 !/BluetoothTest
